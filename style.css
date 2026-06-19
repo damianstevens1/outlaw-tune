@@ -48,7 +48,7 @@ body {
   min-height: 100dvh;
   background:
     linear-gradient(180deg, rgba(3, 6, 19, 0.26), rgba(3, 6, 19, 0.82)),
-    url("assets/outlaw-neon-roadhouse-bg.png") center / cover fixed no-repeat,
+    url("assets/outlaw-neon-roadhouse-bg.webp") center / cover fixed no-repeat,
     #000;
   color: var(--text);
   font-family: Impact, Haettenschweiler, "Arial Narrow Bold", "Segoe UI Condensed", "Roboto Condensed", Arial, sans-serif;
