@@ -18,6 +18,10 @@
   --flame-level: 1;
   --closeness: 1;
   --overheat: 0;
+  --under-tension: 0;
+  --string-tension: 0.5;
+  --resonance: 1;
+  --frame-progress: 0.5;
   --stage-brightness: 1;
 }
 
@@ -161,6 +165,36 @@ button {
     0 0 26px rgba(var(--state-rgb), 0.18);
 }
 
+.character-stage::before,
+.character-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.character-stage::before {
+  z-index: 2;
+  background:
+    radial-gradient(circle at 37% 62%, rgba(255, 205, 76, calc(0.08 + var(--flame-level) * 0.16)), transparent 12%),
+    radial-gradient(circle at 55% 42%, rgba(var(--state-rgb), calc(var(--resonance) * 0.16)), transparent 22%),
+    linear-gradient(90deg, rgba(0, 0, 0, calc(var(--under-tension) * 0.32)), transparent 48%, rgba(255, 58, 20, calc(var(--overheat) * 0.18)));
+  mix-blend-mode: screen;
+  opacity: calc(0.32 + var(--closeness) * 0.28 + var(--overheat) * 0.22);
+  transition: opacity 180ms ease, background 180ms ease;
+}
+
+.character-stage::after {
+  z-index: 4;
+  background:
+    radial-gradient(ellipse at 40% 76%, rgba(104, 255, 0, calc(var(--resonance) * 0.18)), transparent 24%),
+    radial-gradient(ellipse at 18% 60%, rgba(255, 122, 0, calc(var(--flame-level) * 0.12)), transparent 18%),
+    radial-gradient(ellipse at 73% 37%, rgba(255, 30, 22, calc(var(--overheat) * 0.28)), transparent 26%);
+  mix-blend-mode: screen;
+  opacity: calc(0.12 + var(--resonance) * 0.24 + var(--overheat) * 0.24);
+  transition: opacity 180ms ease;
+}
+
 .character-frame {
   position: absolute;
   inset: 0;
@@ -169,7 +203,10 @@ button {
   object-fit: contain;
   object-position: center;
   display: block;
-  filter: saturate(calc(0.92 + var(--closeness) * 0.28 + var(--overheat) * 0.2)) contrast(1.05) brightness(var(--stage-brightness));
+  filter:
+    saturate(calc(0.84 + var(--closeness) * 0.25 + var(--overheat) * 0.2))
+    contrast(calc(1.03 + var(--overheat) * 0.08))
+    brightness(var(--stage-brightness));
   transform: scale(1);
   transform-origin: 56% 42%;
   animation: none;
@@ -192,7 +229,7 @@ button {
 
 .app-shell[data-state="perfect"] .character-frame {
   animation: none;
-  filter: saturate(1.24) contrast(1.12) brightness(1.08);
+  filter: saturate(1.18) contrast(1.08) brightness(1.04);
 }
 
 .stage-glow {
@@ -207,18 +244,21 @@ button {
 
 .flame-system {
   position: absolute;
-  display: none;
-  left: 13%;
-  bottom: 16%;
-  z-index: 3;
-  width: 96px;
-  height: 112px;
+  display: block;
+  left: 31%;
+  bottom: 21%;
+  z-index: 5;
+  width: 72px;
+  height: 92px;
   pointer-events: none;
-  opacity: calc(0.18 + var(--spark-level) * 0.72);
+  opacity: calc(0.04 + var(--spark-level) * 0.3 + var(--overheat) * 0.2);
   filter:
-    drop-shadow(0 0 calc(5px + var(--flame-level) * 22px) rgba(255, 139, 0, 0.7))
-    drop-shadow(0 0 calc(2px + var(--overheat) * 20px) rgba(255, 31, 24, 0.7));
-  transform: scale(calc(0.45 + var(--flame-level) * 0.7 + var(--overheat) * 0.28));
+    drop-shadow(0 0 calc(3px + var(--flame-level) * 16px) rgba(255, 139, 0, 0.62))
+    drop-shadow(0 0 calc(1px + var(--overheat) * 18px) rgba(255, 31, 24, 0.66));
+  transform:
+    translateY(calc(var(--under-tension) * 8px - var(--overheat) * 7px))
+    rotate(calc(var(--overheat) * -8deg))
+    scale(calc(0.44 + var(--flame-level) * 0.42 + var(--overheat) * 0.22));
   transform-origin: 34% 84%;
   transition: opacity 180ms ease, transform 200ms ease, filter 200ms ease;
 }

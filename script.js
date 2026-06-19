@@ -9,35 +9,8 @@ const guitarStrings = [
 
 const stringsByKey = Object.fromEntries(guitarStrings.map((string) => [string.key, string]));
 
-const stateFrames = Array.from(
-  { length: 18 },
-  (_, index) => `assets/outlaw-frame-${String(index + 1).padStart(2, "0")}.png`
-);
-
-const visualFrames = [
-  ...stateFrames.slice(0, 8),
-  ...stateFrames.slice(9),
-];
-
-const visualStops = [
-  { cents: -50, frame: 0 },
-  { cents: -40, frame: 1 },
-  { cents: -30, frame: 2 },
-  { cents: -20, frame: 3 },
-  { cents: -10, frame: 4 },
-  { cents: -5, frame: 5 },
-  { cents: -2, frame: 6 },
-  { cents: 0, frame: 7 },
-  { cents: 2, frame: 8 },
-  { cents: 10, frame: 9 },
-  { cents: 20, frame: 10 },
-  { cents: 30, frame: 11 },
-  { cents: 40, frame: 12 },
-  { cents: 50, frame: 13 },
-  { cents: 60, frame: 14 },
-  { cents: 70, frame: 15 },
-  { cents: 80, frame: 16 },
-];
+const canonicalCharacterFrame = "assets/outlaw-frame-08.png";
+const visualStageCount = 18;
 
 const stateCopy = {
   "way-low": { title: "Way Low", direction: "Tune Up" },
@@ -75,8 +48,7 @@ const stringButtons = [...document.querySelectorAll(".string-button")];
 const visual = {
   front: characterFrameA,
   back: characterFrameB,
-  currentLowFrame: stateFrames[8],
-  currentHighFrame: stateFrames[8],
+  currentFrame: canonicalCharacterFrame,
 };
 
 let selectedKey = "E2";
@@ -115,10 +87,8 @@ const attractKeyframes = [
   { t: 9200, cents: -28 },
 ];
 
-stateFrames.forEach((src) => {
-  const img = new Image();
-  img.src = src;
-});
+const canonicalPreload = new Image();
+canonicalPreload.src = canonicalCharacterFrame;
 
 function installImageGuards() {
   document.querySelectorAll("img").forEach((img) => {
@@ -229,22 +199,12 @@ function stateForCents(cents) {
 }
 
 function visualPositionForCents(cents) {
-  const clamped = clamp(cents, visualStops[0].cents, visualStops[visualStops.length - 1].cents);
-
-  for (let i = 0; i < visualStops.length - 1; i += 1) {
-    const left = visualStops[i];
-    const right = visualStops[i + 1];
-    if (clamped >= left.cents && clamped <= right.cents) {
-      const span = right.cents - left.cents || 1;
-      return lerp(left.frame, right.frame, (clamped - left.cents) / span);
-    }
-  }
-
-  return visualStops[visualStops.length - 1].frame;
+  const clamped = clamp(cents, -50, 80);
+  return ((clamped + 50) / 130) * (visualStageCount - 1);
 }
 
 function visualStageForCents(cents) {
-  return Math.round((visualPositionForCents(cents) / (visualFrames.length - 1)) * 17);
+  return Math.round(visualPositionForCents(cents));
 }
 
 function formatCents(cents) {
@@ -300,32 +260,35 @@ function updateLockStatus(extra = "") {
 
 function applyVisual(cents) {
   const position = visualPositionForCents(cents);
-  const frameIndex = clamp(Math.round(position), 0, visualFrames.length - 1);
-  const activeFrame = visualFrames[frameIndex];
   const distance = Math.min(Math.abs(cents), 50);
   const closeness = 1 - distance / 50;
   const overheat = clamp((cents - 8) / 42, 0, 1);
-  const spark = clamp(0.16 + closeness * 0.9 + overheat * 0.15, 0, 1.25);
-  const flame = clamp((closeness - 0.16) / 0.84 + overheat * 0.45, 0, 1.5);
+  const under = clamp((-cents - 5) / 45, 0, 1);
+  const tension = clamp((cents + 50) / 130, 0, 1);
+  const spark = clamp(0.12 + closeness * 0.86 + overheat * 0.22, 0, 1.35);
+  const flame = clamp(0.14 + closeness * 0.74 + overheat * 0.62, 0.08, 1.58);
+  const resonance = clamp(1 - Math.abs(cents) / 22, 0, 1);
   const virtualStage = visualStageForCents(cents);
 
-  if (visual.currentLowFrame !== activeFrame) {
-    visual.currentLowFrame = activeFrame;
-    visual.currentHighFrame = activeFrame;
-    visual.front.src = activeFrame;
-    visual.back.src = activeFrame;
+  if (visual.currentFrame !== canonicalCharacterFrame) {
+    visual.currentFrame = canonicalCharacterFrame;
+    visual.front.src = canonicalCharacterFrame;
   }
 
+  visual.back.src = canonicalCharacterFrame;
   visual.front.style.opacity = "1";
   visual.back.style.opacity = "0";
 
   app.dataset.visualStage = String(virtualStage);
-  app.style.setProperty("--frame-blend", "0");
+  app.style.setProperty("--frame-progress", (position / (visualStageCount - 1)).toFixed(3));
   app.style.setProperty("--spark-level", spark.toFixed(3));
   app.style.setProperty("--flame-level", flame.toFixed(3));
   app.style.setProperty("--closeness", closeness.toFixed(3));
   app.style.setProperty("--overheat", overheat.toFixed(3));
-  app.style.setProperty("--stage-brightness", (0.78 + closeness * 0.2 + overheat * 0.1).toFixed(3));
+  app.style.setProperty("--under-tension", under.toFixed(3));
+  app.style.setProperty("--string-tension", tension.toFixed(3));
+  app.style.setProperty("--resonance", resonance.toFixed(3));
+  app.style.setProperty("--stage-brightness", (0.74 + closeness * 0.18 + overheat * 0.08).toFixed(3));
 
   return virtualStage;
 }
