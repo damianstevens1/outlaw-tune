@@ -16,6 +16,8 @@
   --needle-angle: 0deg;
   --spark-level: 1;
   --flame-level: 1;
+  --flare-level: 0;
+  --sprite-position: 57.143%;
   --closeness: 1;
   --overheat: 0;
   --under-tension: 0;
@@ -185,7 +187,7 @@ button {
 }
 
 .character-stage::after {
-  z-index: 4;
+  z-index: 7;
   background:
     radial-gradient(ellipse at 40% 76%, rgba(104, 255, 0, calc(var(--resonance) * 0.18)), transparent 24%),
     radial-gradient(ellipse at 18% 60%, rgba(255, 122, 0, calc(var(--flame-level) * 0.12)), transparent 18%),
@@ -193,6 +195,20 @@ button {
   mix-blend-mode: screen;
   opacity: calc(0.12 + var(--resonance) * 0.24 + var(--overheat) * 0.24);
   transition: opacity 180ms ease;
+}
+
+.app-shell.frame-transition .character-stage::after {
+  animation: frameVeil 220ms ease-out;
+}
+
+.character-rig {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  transform-origin: 56% 42%;
+  animation: none;
+  transform: none;
 }
 
 .character-frame {
@@ -240,31 +256,105 @@ button {
   filter: blur(22px);
   opacity: calc(0.16 + var(--closeness) * 0.52 + var(--overheat) * 0.34);
   pointer-events: none;
+  z-index: 4;
 }
 
 .flame-system {
   position: absolute;
   display: block;
-  left: 31%;
-  bottom: 21%;
+  left: 31.2%;
+  bottom: 21.8%;
   z-index: 5;
-  width: 72px;
-  height: 92px;
+  width: 78px;
+  height: 112px;
   pointer-events: none;
-  opacity: calc(0.04 + var(--spark-level) * 0.3 + var(--overheat) * 0.2);
+  opacity: calc(0.1 + var(--spark-level) * 0.52 + var(--flare-level) * 0.18);
   filter:
-    drop-shadow(0 0 calc(3px + var(--flame-level) * 16px) rgba(255, 139, 0, 0.62))
-    drop-shadow(0 0 calc(1px + var(--overheat) * 18px) rgba(255, 31, 24, 0.66));
+    drop-shadow(0 0 calc(4px + var(--flame-level) * 16px) rgba(255, 139, 0, 0.68))
+    drop-shadow(0 0 calc(2px + var(--flare-level) * 18px) rgba(255, 31, 24, 0.7));
   transform:
     translateY(calc(var(--under-tension) * 8px - var(--overheat) * 7px))
-    rotate(calc(var(--overheat) * -8deg))
-    scale(calc(0.44 + var(--flame-level) * 0.42 + var(--overheat) * 0.22));
-  transform-origin: 34% 84%;
+    rotate(calc(var(--overheat) * -6deg))
+    scale(calc(0.42 + var(--flame-level) * 0.23 + var(--flare-level) * 0.22));
+  transform-origin: 50% 88%;
   transition: opacity 180ms ease, transform 200ms ease, filter 200ms ease;
+}
+
+.flame-system::after {
+  content: "";
+  position: absolute;
+  left: 34px;
+  bottom: 11px;
+  z-index: 4;
+  width: 15px;
+  height: 8px;
+  border-radius: 999px;
+  background:
+    radial-gradient(ellipse at 50% 55%, rgba(255, 248, 188, 0.96), rgba(255, 166, 28, 0.78) 42%, rgba(255, 55, 18, 0.4) 68%, transparent 80%);
+  filter: blur(0.3px) drop-shadow(0 0 9px rgba(255, 154, 28, 0.72));
+  opacity: calc(0.16 + var(--flame-level) * 0.58 + var(--flare-level) * 0.18);
+  transform: rotate(-8deg) scale(calc(0.72 + var(--flame-level) * 0.18 + var(--flare-level) * 0.14));
+  transform-origin: center;
+}
+
+.app-shell[data-state="way-low"] .flame-system {
+  opacity: calc(0.05 + var(--spark-level) * 0.24);
+  filter: drop-shadow(0 0 5px rgba(255, 180, 80, 0.48));
+}
+
+.app-shell[data-state="low"] .flame-system {
+  opacity: calc(0.2 + var(--spark-level) * 0.5);
+  filter:
+    drop-shadow(0 0 calc(7px + var(--flame-level) * 18px) rgba(255, 139, 0, 0.78))
+    drop-shadow(0 0 7px rgba(255, 218, 94, 0.32));
+}
+
+.app-shell[data-state="perfect"] .flame-system {
+  animation: perfectFlamePop 1.15s ease-in-out infinite;
+}
+
+.app-shell[data-state="high"] .flame-system,
+.app-shell[data-state="way-high"] .flame-system {
+  transform:
+    translateX(2px)
+    translateY(calc(-6px - var(--overheat) * 8px))
+    rotate(-5deg)
+    scale(calc(0.46 + var(--flame-level) * 0.16 + var(--flare-level) * 0.3));
+}
+
+.app-shell[data-state="way-high"] .flame-system {
+  animation: overheatFlare 520ms ease-in-out infinite alternate;
+}
+
+.flame-sprite {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background-image: url("assets/flame-sprite-normalized.png");
+  background-repeat: no-repeat;
+  background-size: 800% 100%;
+  background-position: var(--sprite-position) 0;
+  transform-origin: 50% 100%;
+  animation: spriteFlicker 440ms ease-in-out infinite alternate;
+}
+
+.sprite-glow {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 6px;
+  height: 66px;
+  border-radius: 999px;
+  background:
+    radial-gradient(ellipse at 50% 70%, rgba(255, 247, 156, 0.34), rgba(255, 132, 0, 0.28) 38%, rgba(255, 31, 18, 0.18) 62%, transparent 76%);
+  filter: blur(12px);
+  opacity: calc(0.1 + var(--flame-level) * 0.32 + var(--flare-level) * 0.22);
+  transform: scale(calc(0.7 + var(--flame-level) * 0.22 + var(--flare-level) * 0.18));
 }
 
 .flame-core,
 .flame-halo {
+  display: none;
   position: absolute;
   left: 28px;
   bottom: 24px;
@@ -772,6 +862,28 @@ h1 {
   text-align: center;
 }
 
+@keyframes frameVeil {
+  0% {
+    opacity: 0;
+  }
+  42% {
+    opacity: 0.64;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes perfectFlamePop {
+  0%,
+  100% {
+    transform: translateY(0) scale(calc(0.46 + var(--flame-level) * 0.18)) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-2px) scale(calc(0.5 + var(--flame-level) * 0.2)) rotate(2deg);
+  }
+}
+
 @keyframes perfectHeadBob {
   0%,
   100% {
@@ -828,6 +940,30 @@ h1 {
   }
   100% {
     transform: translateX(2px) rotate(5deg) scaleY(calc(0.82 + var(--flame-level) * 0.46 + var(--overheat) * 0.24));
+  }
+}
+
+@keyframes spriteFlicker {
+  0% {
+    transform: translateX(-1px) translateY(1px) rotate(-1.5deg) scaleX(0.98);
+    filter: saturate(1.04) brightness(0.96);
+  }
+  100% {
+    transform: translateX(1px) translateY(-2px) rotate(1.8deg) scaleX(1.04);
+    filter: saturate(1.18) brightness(1.08);
+  }
+}
+
+@keyframes overheatFlare {
+  0% {
+    filter:
+      drop-shadow(0 0 calc(8px + var(--flame-level) * 22px) rgba(255, 139, 0, 0.72))
+      drop-shadow(0 0 calc(10px + var(--flare-level) * 28px) rgba(255, 31, 24, 0.72));
+  }
+  100% {
+    filter:
+      drop-shadow(0 0 calc(12px + var(--flame-level) * 26px) rgba(255, 178, 36, 0.86))
+      drop-shadow(0 0 calc(18px + var(--flare-level) * 34px) rgba(255, 31, 24, 0.82));
   }
 }
 

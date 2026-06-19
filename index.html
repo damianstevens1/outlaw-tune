@@ -21,7 +21,7 @@
     <meta name="twitter:title" content="Outlaw Tune Guitar Tuner">
     <meta name="twitter:description" content="A playable mobile guitar tuner prototype with live mic detection, six strings, and outlaw-stage tuning feedback.">
     <meta name="twitter:image" content="https://outlaw-tune-preview.netlify.app/assets/social-preview.png?v=outlaw-20260606">
-    <link rel="stylesheet" href="style.css?v=outlaw-smooth-single-frame-20260619">
+    <link rel="stylesheet" href="style.css?v=outlaw-rasta-style-smooth-20260619">
   </head>
   <body>
     <main class="app-shell" data-state="perfect">
@@ -35,14 +35,18 @@
 
       <section class="hero-panel">
         <div class="character-stage" id="characterStage" role="img" aria-label="Fictional outlaw-country tuner character">
-          <img id="characterFrameA" class="character-frame frame-a is-visible" src="assets/outlaw-frame-08.png" alt="">
-          <img id="characterFrameB" class="character-frame frame-b" src="assets/outlaw-frame-08.png" alt="" aria-hidden="true">
-          <div class="flame-system" aria-hidden="true">
-            <span class="flame-core"></span>
-            <span class="flame-halo"></span>
-            <span class="spark spark-one"></span>
-            <span class="spark spark-two"></span>
-            <span class="spark spark-three"></span>
+          <div class="character-rig" aria-hidden="true">
+            <img id="characterFrameA" class="character-frame frame-a is-visible" src="assets/outlaw-frame-08.png" alt="">
+            <img id="characterFrameB" class="character-frame frame-b" src="assets/outlaw-frame-08.png" alt="">
+            <div class="flame-system">
+              <span class="sprite-glow"></span>
+              <span class="flame-sprite"></span>
+              <span class="flame-core"></span>
+              <span class="flame-halo"></span>
+              <span class="spark spark-one"></span>
+              <span class="spark spark-two"></span>
+              <span class="spark spark-three"></span>
+            </div>
           </div>
           <div class="stage-glow" aria-hidden="true"></div>
           <div class="smoke smoke-one" aria-hidden="true"></div>
@@ -160,6 +164,6 @@
       <p class="status-text" id="statusText">Requesting microphone access for live tuning.</p>
     </main>
 
-    <script src="script.js?v=outlaw-smooth-single-frame-20260619"></script>
+    <script src="script.js?v=outlaw-rasta-style-smooth-20260619"></script>
   </body>
 </html>

@@ -49,6 +49,8 @@ const visual = {
   front: characterFrameA,
   back: characterFrameB,
   currentFrame: canonicalCharacterFrame,
+  currentMood: "perfect",
+  veilTimer: null,
 };
 
 let selectedKey = "E2";
@@ -207,6 +209,29 @@ function visualStageForCents(cents) {
   return Math.round(visualPositionForCents(cents));
 }
 
+function spriteFrameForCents(cents) {
+  if (cents < -42) return 0;
+  if (cents < -30) return 1;
+  if (cents < -18) return 2;
+  if (cents < -5) return 3;
+  if (cents <= 5) return 4;
+  if (cents <= 15) return 5;
+  if (cents <= 34) return 6;
+  return 7;
+}
+
+function triggerFrameVeil() {
+  app.classList.remove("frame-transition");
+  window.requestAnimationFrame(() => {
+    app.classList.add("frame-transition");
+  });
+
+  window.clearTimeout(visual.veilTimer);
+  visual.veilTimer = window.setTimeout(() => {
+    app.classList.remove("frame-transition");
+  }, 240);
+}
+
 function formatCents(cents) {
   const sign = cents > 0 ? "+" : "";
   return `${sign}${cents.toFixed(1)}`;
@@ -260,19 +285,27 @@ function updateLockStatus(extra = "") {
 
 function applyVisual(cents) {
   const position = visualPositionForCents(cents);
+  const mood = stateForCents(cents);
   const distance = Math.min(Math.abs(cents), 50);
   const closeness = 1 - distance / 50;
   const overheat = clamp((cents - 8) / 42, 0, 1);
+  const flare = clamp((cents - 16) / 34, 0, 1.35);
   const under = clamp((-cents - 5) / 45, 0, 1);
   const tension = clamp((cents + 50) / 130, 0, 1);
   const spark = clamp(0.12 + closeness * 0.86 + overheat * 0.22, 0, 1.35);
   const flame = clamp(0.14 + closeness * 0.74 + overheat * 0.62, 0.08, 1.58);
   const resonance = clamp(1 - Math.abs(cents) / 22, 0, 1);
   const virtualStage = visualStageForCents(cents);
+  const spriteFrame = spriteFrameForCents(cents);
 
   if (visual.currentFrame !== canonicalCharacterFrame) {
     visual.currentFrame = canonicalCharacterFrame;
     visual.front.src = canonicalCharacterFrame;
+  }
+
+  if (visual.currentMood !== mood) {
+    visual.currentMood = mood;
+    triggerFrameVeil();
   }
 
   visual.back.src = canonicalCharacterFrame;
@@ -280,9 +313,12 @@ function applyVisual(cents) {
   visual.back.style.opacity = "0";
 
   app.dataset.visualStage = String(virtualStage);
+  app.dataset.visualMood = mood;
   app.style.setProperty("--frame-progress", (position / (visualStageCount - 1)).toFixed(3));
   app.style.setProperty("--spark-level", spark.toFixed(3));
   app.style.setProperty("--flame-level", flame.toFixed(3));
+  app.style.setProperty("--flare-level", flare.toFixed(3));
+  app.style.setProperty("--sprite-position", `${((spriteFrame / 7) * 100).toFixed(3)}%`);
   app.style.setProperty("--closeness", closeness.toFixed(3));
   app.style.setProperty("--overheat", overheat.toFixed(3));
   app.style.setProperty("--under-tension", under.toFixed(3));
