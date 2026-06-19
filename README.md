@@ -1,6 +1,6 @@
 # Outlaw Tune
 
-Outlaw Tune is a static, mobile-first guitar tuner prototype. It uses browser microphone input, Web Audio pitch detection, six-string auto-detection, and a generated 16-frame outlaw-country character progression that reacts as the note moves from flat to perfect to sharp.
+Outlaw Tune is a static, mobile-first guitar tuner prototype. It uses browser microphone input, Web Audio pitch detection, six-string auto-detection, a generated 16-frame outlaw-country character progression, and a neon roadhouse visual system with animated ambient background layers.
 
 ## Files
 
