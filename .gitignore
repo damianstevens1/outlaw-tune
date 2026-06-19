@@ -1,4 +1,5 @@
 qa/
+.netlify/
 *.zip
 .DS_Store
 Thumbs.db
