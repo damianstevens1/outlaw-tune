@@ -782,7 +782,10 @@ async function bootTuner() {
 
   const started = await startMic({ automatic: true });
   if (!started) {
-    startAttractLoop();
+    statusText.textContent = "Ready without mic. Tap Mic for live tuning or use the demo slider.";
+    if (queryParams.get("preview") === "auto") {
+      startAttractLoop();
+    }
   }
 }
 
