@@ -9,8 +9,30 @@ const guitarStrings = [
 
 const stringsByKey = Object.fromEntries(guitarStrings.map((string) => [string.key, string]));
 
-const canonicalCharacterFrame = "assets/outlaw-frame-08.png";
-const visualStageCount = 18;
+const generatedCharacterFrames = Array.from(
+  { length: 16 },
+  (_, index) => `assets/generated-outlaw-v2/outlaw-gen-v2-${String(index + 1).padStart(2, "0")}.png`,
+);
+const canonicalCharacterFrame = generatedCharacterFrames[7];
+const visualStageCount = generatedCharacterFrames.length;
+const generatedFrameStops = [
+  { cents: -50, frame: 0 },
+  { cents: -40, frame: 1 },
+  { cents: -30, frame: 2 },
+  { cents: -20, frame: 3 },
+  { cents: -10, frame: 4 },
+  { cents: -5, frame: 5 },
+  { cents: -2, frame: 6 },
+  { cents: 0, frame: 7 },
+  { cents: 2, frame: 8 },
+  { cents: 8, frame: 9 },
+  { cents: 15, frame: 10 },
+  { cents: 25, frame: 11 },
+  { cents: 35, frame: 12 },
+  { cents: 50, frame: 13 },
+  { cents: 65, frame: 14 },
+  { cents: 80, frame: 15 },
+];
 
 const stateCopy = {
   "way-low": { title: "Way Low", direction: "Tune Up" },
@@ -48,7 +70,8 @@ const stringButtons = [...document.querySelectorAll(".string-button")];
 const visual = {
   front: characterFrameA,
   back: characterFrameB,
-  currentFrame: canonicalCharacterFrame,
+  frontFrame: canonicalCharacterFrame,
+  backFrame: canonicalCharacterFrame,
   currentMood: "perfect",
   veilTimer: null,
 };
@@ -91,6 +114,10 @@ const attractKeyframes = [
 
 const canonicalPreload = new Image();
 canonicalPreload.src = canonicalCharacterFrame;
+generatedCharacterFrames.forEach((frame) => {
+  const image = new Image();
+  image.src = frame;
+});
 
 function installImageGuards() {
   document.querySelectorAll("img").forEach((img) => {
@@ -209,6 +236,32 @@ function visualStageForCents(cents) {
   return Math.round(visualPositionForCents(cents));
 }
 
+function generatedFrameMixForCents(cents) {
+  const first = generatedFrameStops[0];
+  const last = generatedFrameStops[generatedFrameStops.length - 1];
+
+  if (cents <= first.cents) {
+    return { from: first.frame, to: first.frame, blend: 0 };
+  }
+
+  if (cents >= last.cents) {
+    return { from: last.frame, to: last.frame, blend: 0 };
+  }
+
+  for (let index = 0; index < generatedFrameStops.length - 1; index += 1) {
+    const lower = generatedFrameStops[index];
+    const upper = generatedFrameStops[index + 1];
+
+    if (cents >= lower.cents && cents <= upper.cents) {
+      const span = upper.cents - lower.cents || 1;
+      const blend = easeInOut((cents - lower.cents) / span);
+      return { from: lower.frame, to: upper.frame, blend };
+    }
+  }
+
+  return { from: 7, to: 7, blend: 0 };
+}
+
 function spriteFrameForCents(cents) {
   if (cents < -42) return 0;
   if (cents < -30) return 1;
@@ -297,10 +350,18 @@ function applyVisual(cents) {
   const resonance = clamp(1 - Math.abs(cents) / 22, 0, 1);
   const virtualStage = visualStageForCents(cents);
   const spriteFrame = spriteFrameForCents(cents);
+  const frameMix = generatedFrameMixForCents(cents);
+  const frontFrame = generatedCharacterFrames[frameMix.from];
+  const backFrame = generatedCharacterFrames[frameMix.to];
 
-  if (visual.currentFrame !== canonicalCharacterFrame) {
-    visual.currentFrame = canonicalCharacterFrame;
-    visual.front.src = canonicalCharacterFrame;
+  if (visual.frontFrame !== frontFrame) {
+    visual.frontFrame = frontFrame;
+    visual.front.src = frontFrame;
+  }
+
+  if (visual.backFrame !== backFrame) {
+    visual.backFrame = backFrame;
+    visual.back.src = backFrame;
   }
 
   if (visual.currentMood !== mood) {
@@ -308,13 +369,14 @@ function applyVisual(cents) {
     triggerFrameVeil();
   }
 
-  visual.back.src = canonicalCharacterFrame;
-  visual.front.style.opacity = "1";
-  visual.back.style.opacity = "0";
+  visual.front.style.opacity = (1 - frameMix.blend).toFixed(3);
+  visual.back.style.opacity = frameMix.blend.toFixed(3);
 
   app.dataset.visualStage = String(virtualStage);
+  app.dataset.generatedFrame = `${frameMix.from + 1}-${frameMix.to + 1}`;
   app.dataset.visualMood = mood;
   app.style.setProperty("--frame-progress", (position / (visualStageCount - 1)).toFixed(3));
+  app.style.setProperty("--frame-blend", frameMix.blend.toFixed(3));
   app.style.setProperty("--spark-level", spark.toFixed(3));
   app.style.setProperty("--flame-level", flame.toFixed(3));
   app.style.setProperty("--flare-level", flare.toFixed(3));

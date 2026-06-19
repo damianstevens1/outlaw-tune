@@ -239,6 +239,10 @@ button {
   opacity: 0;
 }
 
+.flame-system {
+  display: none;
+}
+
 .app-shell[data-state="way-high"] .character-stage {
   animation: warningShake 520ms ease-in-out;
 }
@@ -261,7 +265,7 @@ button {
 
 .flame-system {
   position: absolute;
-  display: block;
+  display: none;
   left: 31.2%;
   bottom: 21.8%;
   z-index: 5;
