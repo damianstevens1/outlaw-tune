@@ -11,7 +11,7 @@ const stringsByKey = Object.fromEntries(guitarStrings.map((string) => [string.ke
 
 const generatedCharacterFrames = Array.from(
   { length: 16 },
-  (_, index) => `assets/generated-outlaw-v2-hd/outlaw-gen-v2-${String(index + 1).padStart(2, "0")}.png`,
+  (_, index) => `assets/generated-outlaw-v2/outlaw-gen-v2-${String(index + 1).padStart(2, "0")}.png`,
 );
 const canonicalCharacterFrame = generatedCharacterFrames[7];
 const visualStageCount = generatedCharacterFrames.length;
