@@ -11,7 +11,7 @@ const stringsByKey = Object.fromEntries(guitarStrings.map((string) => [string.ke
 
 const generatedCharacterFrames = Array.from(
   { length: 16 },
-  (_, index) => `assets/generated-outlaw-v2/outlaw-gen-v2-${String(index + 1).padStart(2, "0")}.png`,
+  (_, index) => `assets/generated-outlaw-v2-hd/outlaw-gen-v2-${String(index + 1).padStart(2, "0")}.png`,
 );
 const canonicalCharacterFrame = generatedCharacterFrames[7];
 const visualStageCount = generatedCharacterFrames.length;
@@ -119,6 +119,23 @@ generatedCharacterFrames.forEach((frame) => {
   image.src = frame;
 });
 
+function syncVisibleViewportHeight() {
+  const viewportHeight = window.visualViewport?.height || window.innerHeight;
+  if (window.innerWidth <= 520 && Number.isFinite(viewportHeight)) {
+    document.documentElement.style.setProperty("--app-height", `${Math.floor(viewportHeight)}px`);
+    window.scrollTo(0, 0);
+    return;
+  }
+
+  document.documentElement.style.removeProperty("--app-height");
+}
+
+function finishStartupZoom() {
+  window.setTimeout(() => {
+    document.body.classList.remove("startup-zoom");
+  }, 4700);
+}
+
 function installImageGuards() {
   document.querySelectorAll("img").forEach((img) => {
     const markLoaded = () => {
@@ -156,7 +173,12 @@ function installImageGuards() {
   });
 }
 
+syncVisibleViewportHeight();
+window.addEventListener("resize", syncVisibleViewportHeight);
+window.visualViewport?.addEventListener("resize", syncVisibleViewportHeight);
+window.visualViewport?.addEventListener("scroll", syncVisibleViewportHeight);
 installImageGuards();
+finishStartupZoom();
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
